@@ -1,0 +1,32 @@
+# Build outputs
+bin/
+obj/
+
+# Rider files
+.idea/
+*.sln.iml
+
+# Visual Studio files
+*.user
+*.suo
+
+# Logs and crash dumps
+*.log
+*.dmp
+
+# Shader cache or temp
+*.spv
+*.tmp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# VS Code (optional)
+.vscode/
+
+# Assets (optional)
+Assets/models/*
+Assets/textures/*
+!Assets/models/.keep
+!Assets/textures/.keep
