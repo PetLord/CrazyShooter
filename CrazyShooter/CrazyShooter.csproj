@@ -16,6 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Folder Include="Assets\Shaders\" />
       <Folder Include="Core\" />
     </ItemGroup>
 
