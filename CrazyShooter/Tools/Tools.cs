@@ -25,6 +25,7 @@ namespace CrazyShooter.Tools
             var text = resStreamReader.ReadToEnd();
             return text;
         }
+        
     }
 
     public static class ProgramUtils

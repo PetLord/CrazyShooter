@@ -6,6 +6,7 @@ using CrazyShooter.Scene;
 using CrazyShooter.UI;
 using Silk.NET.Input;
 
+using Shader = CrazyShooter.Rendering.Shader;
 namespace CrazyShooter;
 
 // todo! fix font style
@@ -24,11 +25,15 @@ class Program
     
     private static GL gl;
     private static uint program;
+    private static Shader shader;
 
     private static GameState gameState = GameState.MainMenu;
     private static Scene.Scene? currentScene;
     private static Menu menu;
     
+    private static string vertexSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.VertexShader.vert");
+    private static string fragmentSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.FragmentShader.frag");
+
     static void Main()
     {
         WindowOptions windowOptions = WindowOptions.Default;
@@ -57,7 +62,9 @@ class Program
     private static void GraphicWindow_Load()
     {
         gl = graphicWindow.CreateOpenGL();
-        program = ProgramUtils.LinkProgram(gl);
+        shader = new Shader(gl, vertexSource, fragmentSource);
+        program = shader.Handle;
+        // program = ProgramUtils.LinkProgram(gl);
         inputContext = graphicWindow.CreateInput();
         menu = new Menu(gl, graphicWindow, inputContext);
         gl.Enable(GLEnum.DepthTest);
@@ -131,6 +138,7 @@ class Program
     public static void StartGame()
     {
         gameState = GameState.Playing;
+        currentScene = new Scene.Scene(gl, shader);
     }
     
     public static void ExitGame()

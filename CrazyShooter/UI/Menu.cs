@@ -44,7 +44,7 @@ public class Menu : IDisposable
     public void Render()
     {
         RenderLayout();
-        controller.Render();  // Always call this to render ImGui UI
+        controller.Render(); 
     }
 
     private void RenderLayout()

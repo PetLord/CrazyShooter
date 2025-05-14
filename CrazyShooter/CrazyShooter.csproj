@@ -17,7 +17,6 @@
 
     <ItemGroup>
       <Folder Include="Assets\Fonts\" />
-      <Folder Include="Assets\Shaders\" />
       <Folder Include="Core\" />
     </ItemGroup>
 
@@ -29,12 +28,15 @@
       <PackageReference Include="Silk.NET.OpenGL" Version="2.22.0" />
       <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.22.0" />
       <PackageReference Include="Silk.NET.Windowing" Version="2.22.0" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="Assets\Shaders\FragmentShader.frag" />
       <EmbeddedResource Include="Assets\Shaders\FragmentShader.frag" />
       <None Remove="Assets\Shaders\VertexShader.vert" />
+      <EmbeddedResource Include="Assets\Shaders\OmniFragmentShader.frag" />
+      <EmbeddedResource Include="Assets\Shaders\OmniVertexShader.vert" />
       <EmbeddedResource Include="Assets\Shaders\VertexShader.vert" />
     </ItemGroup>
 
