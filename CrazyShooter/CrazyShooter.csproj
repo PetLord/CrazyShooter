@@ -7,8 +7,33 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
     <ItemGroup>
-      <Folder Include="Core\Rendering\Input\" />
+      <Folder Include="Assets\Shaders\" />
+      <Folder Include="Core\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Silk.NET" Version="2.22.0" />
+      <PackageReference Include="Silk.NET.Core" Version="2.22.0" />
+      <PackageReference Include="Silk.NET.Input" Version="2.22.0" />
+      <PackageReference Include="Silk.NET.Maths" Version="2.22.0" />
+      <PackageReference Include="Silk.NET.OpenGL" Version="2.22.0" />
+      <PackageReference Include="Silk.NET.Windowing" Version="2.22.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Assets\Shaders\FragmentShader.frag" />
+      <EmbeddedResource Include="Assets\Shaders\FragmentShader.frag" />
+      <None Remove="Assets\Shaders\VertexShader.vert" />
+      <EmbeddedResource Include="Assets\Shaders\VertexShader.vert" />
     </ItemGroup>
 
 </Project>
