@@ -44,6 +44,9 @@
       <None Include="Assets\Fonts\**">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Include="Assets\Textures\**">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 

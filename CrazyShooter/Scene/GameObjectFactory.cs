@@ -8,8 +8,8 @@ public static class GameObjectFactory
 {
     public static Player CreatePlayer(GL gl, Shader shader)
     {
-        string playerModelPath = "CrazyShooter.Assets.Textures.Duck.RubberDuck_LOD0.obj";
-        string playerTexturePath = "CrazyShooter.Assets.Textures.Duck.Solid_yellow.png";
+        string playerModelPath = "Assets/Textures/Duck/RubberDuck_LOD0.obj";
+        string playerTexturePath = "Assets/Textures/Duck/Solid_yellow.png";
         uint textureId = ObjectLoader.LoadTexture(gl, playerTexturePath);
         var model = ObjectLoader.Load(playerModelPath, shader, textureId);
         var mesh = new Mesh(gl, model);
