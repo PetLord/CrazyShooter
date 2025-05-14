@@ -4,10 +4,62 @@ namespace CrazyShooter.Rendering;
 
 public static class ObjLoader
 {
-    public static ObjectModel Load(string path)
+    public static ObjectModel Load(string path, Shader shader, uint textureId)
     {
-        var model = new ObjectModel();
-        return model;
+        // Step 1: Read the raw data
+        ReadObjectData(
+            path,
+            out var objVertices,
+            out var objFaces,
+            out var objFaceNormalIndices,
+            out var objNormals,
+            out var objFaceTextureIndices,
+            out var objTextures
+        );
+        
+        var interleaved = new List<float>();
+        var indices = new List<uint>();
+        var vertexMap = new Dictionary<string, uint>();
+        uint currentIndex = 0;
+
+        for (int f = 0; f < objFaces.Count; f++)
+        {
+            int[] face = objFaces[f];
+            int[] normalIndices = f < objFaceNormalIndices.Count ? objFaceNormalIndices[f] :null;
+            int[] texIndices = f < objFaceTextureIndices.Count ? objFaceTextureIndices[f] :null;
+
+            for (int i = 0; i < face.Length; i++)
+            {
+                int vi = face[i];
+                int? ni = (normalIndices != null && i < normalIndices.Length) ? normalIndices[i] : null;
+                int? ti = (texIndices != null && i < texIndices.Length) ? texIndices[i] : null;
+
+                float[] v = objVertices[vi];
+
+                float[] n = ni.HasValue && ni.Value < objNormals.Count
+                    ? objNormals[ni.Value]
+                    : new float[]{ 0f, 1f, 0f };
+
+                float[] t = ti.HasValue && ti.Value < objTextures.Count
+                    ? objTextures[ti.Value]
+                    : new float[] { 0f, 0f };
+
+                string key = $"{vi}/{ti}/{ni}";
+                if (!vertexMap.TryGetValue(key, out uint index))
+                {
+                    interleaved.AddRange(v); // pos
+                    interleaved.AddRange(n); // normal
+                    interleaved.AddRange(t); // texture coord
+
+                    index = currentIndex++;
+                    vertexMap[key] = index;
+                }
+
+                indices.Add(index);
+            }
+        }
+
+        return new ObjectModel(interleaved.ToArray(), indices.ToArray(), shader, textureId);
     }
 
     private static void ReadObjectData(
