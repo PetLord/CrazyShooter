@@ -10,12 +10,12 @@ public class Mesh
     public int IndexCount { get; }
 
     private Shader Shader { get; }
-    public uint TextureID { get; }
+    public uint TextureId { get; }
 
     public unsafe Mesh(GL gl, ObjectModel model)
     {
         Shader = model.Shader;
-        TextureID = model.TextureID;
+        TextureId = model.TextureId;
         IndexCount = model.Indices.Length;
 
         Vao = gl.GenVertexArray();

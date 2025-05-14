@@ -1,4 +1,5 @@
-﻿using Silk.NET.OpenGL;
+﻿using CrazyShooter.Tools;
+using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
 namespace CrazyShooter;
@@ -6,8 +7,8 @@ namespace CrazyShooter;
 class Program
 {
     private static IWindow graphicWindow;
-    private static GL Gl;
-    
+    private static GL gl;
+    private static uint program;
     static void Main()
     {
         WindowOptions windowOptions = WindowOptions.Default;
@@ -20,23 +21,22 @@ class Program
         graphicWindow.Update += GraphicWindow_Update;
         graphicWindow.Render += GraphicWindow_Render;
         graphicWindow.Closing += GraphicWindow_Closing;
-
         graphicWindow.FramebufferResize += size =>
         {
-            Gl.Viewport(size);
+            gl.Viewport(size);
         };
 
         
         graphicWindow.Run();
     }
     
-    
     private static void GraphicWindow_Load()
     {
-        Gl = graphicWindow.CreateOpenGL();
-        Gl.Enable(GLEnum.DepthTest);
-        Gl.DepthFunc(DepthFunction.Lequal);
-        Gl.ClearColor(0.1f, 0.1f, 0.1f, 1f);
+        gl = graphicWindow.CreateOpenGL();
+        program = ProgramUtils.LinkProgram(gl);
+        gl.Enable(GLEnum.DepthTest);
+        gl.DepthFunc(DepthFunction.Lequal);
+        gl.ClearColor(0.1f, 0.1f, 0.1f, 1f);
     }
     
     private static void GraphicWindow_Closing()

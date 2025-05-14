@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using CrazyShooter.Tools;
+﻿using CrazyShooter.Tools;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
@@ -45,10 +44,10 @@ public class GameObject
         gl.UniformMatrix4(projLoc, 1, false, (float*)&projection);
 
         // Optional: bind texture if needed
-        if (Mesh.TextureID != 0)
+        if (Mesh.TextureId != 0)
         {
             gl.ActiveTexture(TextureUnit.Texture0);
-            gl.BindTexture(TextureTarget.Texture2D, Mesh.TextureID);
+            gl.BindTexture(TextureTarget.Texture2D, Mesh.TextureId);
         }
 
         // Draw the mesh
