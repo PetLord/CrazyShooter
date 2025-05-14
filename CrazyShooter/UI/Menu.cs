@@ -28,7 +28,7 @@ public class Menu : IDisposable
 
         if (File.Exists(fontPath))
         {
-            fontPtr = io.Fonts.AddFontFromFileTTF(fontPath, 24, null, io.Fonts.GetGlyphRangesDefault());
+            // fontPtr = io.Fonts.AddFontFromFileTTF(fontPath, 24, null, io.Fonts.GetGlyphRangesDefault());
         }
         else
         {
