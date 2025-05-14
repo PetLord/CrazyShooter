@@ -3,8 +3,9 @@ using Silk.NET.OpenGL;
 
 namespace CrazyShooter.Rendering;
 
-public class Mesh
+public class Mesh : IDisposable
 {
+    private readonly GL _gl;
     public uint Vao { get;}
     public uint Vbo { get;}
     public uint Ebo { get;}
@@ -15,6 +16,7 @@ public class Mesh
 
     public unsafe Mesh(GL gl, ObjectModel model)
     {
+        _gl = gl;
         Shader = model.Shader;
         TextureId = model.TextureId;
         IndexCount = model.Indices.Length;
@@ -47,30 +49,41 @@ public class Mesh
         gl.BindVertexArray(0);
     }
     
-    public unsafe void Render(GL gl, Matrix4X4<float> model, Matrix4X4<float> view, Matrix4X4<float> projection)
+    public unsafe void Render(Matrix4X4<float> model, Matrix4X4<float> view, Matrix4X4<float> projection)
     {
         Shader.Use();
 
-        int modelLoc = gl.GetUniformLocation(Shader.Handle, "uModel");
-        gl.UniformMatrix4(modelLoc, 1, false, (float*)&model);
+        int modelLoc = _gl.GetUniformLocation(Shader.Handle, "uModel");
+        _gl.UniformMatrix4(modelLoc, 1, false, (float*)&model);
 
-        int viewLoc = gl.GetUniformLocation(Shader.Handle, "uView");
-        gl.UniformMatrix4(viewLoc, 1, false, (float*)&view);
+        int viewLoc = _gl.GetUniformLocation(Shader.Handle, "uView");
+        _gl.UniformMatrix4(viewLoc, 1, false, (float*)&view);
 
-        int projLoc = gl.GetUniformLocation(Shader.Handle, "uProjection");
-        gl.UniformMatrix4(projLoc, 1, false, (float*)&projection);
+        int projLoc = _gl.GetUniformLocation(Shader.Handle, "uProjection");
+        _gl.UniformMatrix4(projLoc, 1, false, (float*)&projection);
 
         if (TextureId != 0)
         {
-            gl.ActiveTexture(TextureUnit.Texture0);
-            gl.BindTexture(TextureTarget.Texture2D, TextureId);
-            int texLoc = gl.GetUniformLocation(Shader.Handle, "uTexture");
-            gl.Uniform1(texLoc, 0);
+            _gl.ActiveTexture(TextureUnit.Texture0);
+            _gl.BindTexture(TextureTarget.Texture2D, TextureId);
+            int texLoc = _gl.GetUniformLocation(Shader.Handle, "uTexture");
+            _gl.Uniform1(texLoc, 0);
         }
 
-        gl.BindVertexArray(Vao);
-        gl.BindBuffer(GLEnum.ElementArrayBuffer, Ebo);
-        gl.DrawElements(PrimitiveType.Triangles, (uint)IndexCount, DrawElementsType.UnsignedInt, null);
+        _gl.BindVertexArray(Vao);
+        _gl.BindBuffer(GLEnum.ElementArrayBuffer, Ebo);
+        _gl.DrawElements(PrimitiveType.Triangles, (uint)IndexCount, DrawElementsType.UnsignedInt, null);
     }
 
+    public void Dispose()
+    {
+        Shader?.Dispose();
+
+        _gl.DeleteVertexArray(Vao);
+        _gl.DeleteBuffer(Vbo);
+        _gl.DeleteBuffer(Ebo);
+
+        if (TextureId != 0)
+            _gl.DeleteTexture(TextureId);
+    }
 }

@@ -1,6 +1,8 @@
-﻿using CrazyShooter.Tools;
+﻿using CrazyShooter.Rendering;
+using CrazyShooter.Tools;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
+using CrazyShooter.Scene;
 
 namespace CrazyShooter;
 
@@ -9,6 +11,7 @@ class Program
     private static IWindow graphicWindow;
     private static GL gl;
     private static uint program;
+    private static Scene.Scene? currentScene;
     static void Main()
     {
         WindowOptions windowOptions = WindowOptions.Default;
@@ -24,6 +27,10 @@ class Program
         graphicWindow.FramebufferResize += size =>
         {
             gl.Viewport(size);
+            if (currentScene is not null)
+            {
+                currentScene.AspectRatio = (float)size.X / size.Y;
+            }
         };
         
         graphicWindow.Run();
@@ -40,16 +47,25 @@ class Program
     
     private static void GraphicWindow_Closing()
     {
-
+        if (currentScene is not null)
+        {
+            currentScene.Dispose();
+        }
     }
     
     private static void GraphicWindow_Update(double deltaTime)
     {
-
+        if (currentScene is not null)
+        {
+            currentScene.Update(deltaTime);
+        }
     }
 
     private static unsafe void GraphicWindow_Render(double deltaTime)
     {
-        
+        if (currentScene is not null)
+        {
+            currentScene.Render(gl);
+        }
     }
 }

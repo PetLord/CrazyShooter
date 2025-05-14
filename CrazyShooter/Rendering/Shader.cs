@@ -1,9 +1,9 @@
-﻿using System.Numerics;
+﻿using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
 namespace CrazyShooter.Rendering;
 
-public class Shader
+public class Shader : IDisposable
 {
     private readonly GL _gl;
     public uint Handle { get; private set; }
@@ -55,12 +55,18 @@ public class Shader
         return _gl.GetUniformLocation(Handle, name);
     }
 
-    public void SetMatrix4(string name, Matrix4x4 matrix)
+
+    public unsafe void SetMatrix4(string name, Matrix4X4<float> matrix)
     {
-        unsafe
-        {
-            int location = GetUniformLocation(name);
-            _gl.UniformMatrix4(location, 1, false, (float*)&matrix);
-        }
+        int location = GetUniformLocation(name);
+        _gl.UniformMatrix4(location, 1, false, (float*)&matrix);
+    
     }
+
+    
+    public void Dispose()
+    {
+        _gl.DeleteProgram(Handle);
+    }
+
 }
