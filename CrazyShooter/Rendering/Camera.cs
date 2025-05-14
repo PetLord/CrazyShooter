@@ -4,7 +4,15 @@ namespace CrazyShooter.Rendering;
 
 public class Camera
 {
-    private Vector3 Position { get; set; } = new(0f, 0f, 3f);
+    public enum CameraMode
+    {
+        FirstPerson,
+        ThirdPerson
+    }
+    
+    public Vector3 Position { get; set; } = new(0f, 0f, 3f);
+    public CameraMode Mode { get; set; } = CameraMode.ThirdPerson;
+    public float Distance { get; set; } = 5.0f;
     private float Yaw { get; set; } = -90f;
     private float Pitch { get; set; }= 0f;
     private float Speed { get; set; } = 5f;
@@ -57,6 +65,36 @@ public class Camera
         Up = Vector3.Normalize(Vector3.Cross(Right, Front));
     }
 
-    
+    public void Follow(Vector3 targetPosition, float yaw, float pitch)
+    {
+        Yaw = yaw;
+        Pitch = pitch;
+        UpdateCameraVectors();
+
+        if (Mode == CameraMode.FirstPerson)
+        {
+            Position = targetPosition;
+        }
+        else if (Mode == CameraMode.ThirdPerson)
+        {
+            Vector3 offset = -Front * Distance + new Vector3(0, Distance / 2, 0);
+            Position = targetPosition + offset;
+        }
+    }
+
+    public void ToggleView()
+    {
+        switch (Mode)
+        {
+            case CameraMode.FirstPerson:
+                Mode = CameraMode.ThirdPerson;
+                return;
+            case CameraMode.ThirdPerson:
+                Mode = CameraMode.FirstPerson;
+                return;
+        }
+        
+    }
+
 }
 

@@ -25,7 +25,6 @@ class Program
         {
             gl.Viewport(size);
         };
-
         
         graphicWindow.Run();
     }

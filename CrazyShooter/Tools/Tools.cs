@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Numerics;
+using System.Reflection;
+using CrazyShooter.Rendering;
 using Silk.NET.OpenGL;
 
 namespace CrazyShooter.Tools
@@ -56,4 +58,72 @@ namespace CrazyShooter.Tools
             return program;
         }
     }
+
+    public static class LightUtils
+    {
+        private const string LightColorVariableName = "lightColor";
+        private const string LightPositionVariableName = "lightPos";
+        private const string ViewPosVariableName = "viewPos";
+        private const string ShininessVariableName = "shininess";
+        
+        private static void SetLightColor(GL gl, uint program, Vector3 color)
+        {
+            int location = gl.GetUniformLocation(program, LightColorVariableName);
+
+            if (location == -1)
+            {
+                throw new Exception($"{LightColorVariableName} uniform not found on shader.");
+            }
+
+            gl.Uniform3(location, color.X, color.Y, color.Z);
+            CheckError(gl);
+        }
+
+        private static void SetLightPosition(GL gl, uint program, Vector3 position)
+        {
+            int location = gl.GetUniformLocation(program, LightPositionVariableName);
+
+            if (location == -1)
+            {
+                throw new Exception($"{LightPositionVariableName} uniform not found on shader.");
+            }
+
+            gl.Uniform3(location, position.X, position.Y, position.Z);
+            CheckError(gl);
+        }
+        
+        private static void SetViewerPosition(GL gl, uint program, Camera camera)
+        {
+            int location = gl.GetUniformLocation(program, ViewPosVariableName);
+
+            if (location == -1)
+            {
+                throw new Exception($"{ViewPosVariableName} uniform not found on shader.");
+            }
+
+            gl.Uniform3(location, camera.Position.X, camera.Position.Y, camera.Position.Z);
+            CheckError(gl);
+        }
+
+        private static void SetShininess(GL gl, uint program, uint shininess)
+        {
+            int location = gl.GetUniformLocation(program, ShininessVariableName);
+
+            if (location == -1)
+            {
+                throw new Exception($"{ShininessVariableName} uniform not found on shader.");
+            }
+
+            gl.Uniform1(location, shininess);
+            CheckError(gl);
+        }
+        
+        private static void CheckError(GL gl)
+        {
+            var error = (ErrorCode)gl.GetError();
+            if (error != ErrorCode.NoError)
+                throw new Exception("GL.GetError() returned " + error.ToString());
+        }
+    }
+    
 }

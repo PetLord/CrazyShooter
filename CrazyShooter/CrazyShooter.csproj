@@ -29,4 +29,11 @@
       <PackageReference Include="Silk.NET.Windowing" Version="2.22.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\Shaders\FragmentShader.frag" />
+      <EmbeddedResource Include="Assets\Shaders\FragmentShader.frag" />
+      <None Remove="Assets\Shaders\VertexShader.vert" />
+      <EmbeddedResource Include="Assets\Shaders\VertexShader.vert" />
+    </ItemGroup>
+
 </Project>
