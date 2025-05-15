@@ -7,6 +7,12 @@ namespace CrazyShooter.Input;
 
 public class PlayerInputHandler
 {
+    public enum MouseState
+    {
+        PlayMode,
+        FreeMode,
+    }
+    
     private List<IKeyboard> keyboards = new();
     private List<IMouse> mice = new();
     
@@ -16,6 +22,7 @@ public class PlayerInputHandler
     
     private Vector2D<float> lastMousePos;
     private bool firstFrame = true;
+    private MouseState currentMode = MouseState.FreeMode;
     
     public Vector2D<float> MouseDelta { get; private set; }
 
@@ -78,5 +85,36 @@ public class PlayerInputHandler
                 0);
         }
     }
+    
+    public void SetMouseMode(MouseState mouseState)
+    {
+        currentMode = mouseState;
+        switch (mouseState)
+        {
+            case MouseState.PlayMode:
+                SwitchToPlay();
+                break;
+            case MouseState.FreeMode:
+                SwitchToFreeMode();
+                break;
+        }
+    }
 
+    private void SwitchToPlay()
+    {
+        IMouse currentMouse = mice[0];
+        currentMode = MouseState.PlayMode;
+        currentMouse.Cursor.CursorMode = CursorMode.Raw;
+        currentMouse.Cursor.IsConfined = true;
+    }
+
+    private void SwitchToFreeMode()
+    {
+        IMouse currentMouse = mice[0];
+        currentMode = MouseState.FreeMode;
+        currentMouse.Cursor.CursorMode = CursorMode.Normal;
+        currentMouse.Cursor.IsConfined = false;
+
+    }
+    
 }

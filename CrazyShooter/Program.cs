@@ -146,6 +146,7 @@ class Program
     {
         gameState = GameState.Playing;
         currentScene = new Scene.Scene(gl, shader, playerInputHandler);
+        playerInputHandler.SetMouseMode(PlayerInputHandler.MouseState.PlayMode);
     }
     
     public static void ExitGame()
