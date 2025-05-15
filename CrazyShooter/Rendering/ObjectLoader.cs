@@ -1,7 +1,10 @@
 ﻿using System.Globalization;
+using System.Reflection;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using StbImageSharp;
+
 
 namespace CrazyShooter.Rendering;
 
@@ -124,8 +127,8 @@ public static class ObjectLoader
                     objTextures.Add(data.Select(d => float.Parse(d, CultureInfo.InvariantCulture)).ToArray());
                     break;
 
-                case "f": // face (possibly with v/vt/vn)
-                    var face = new List<int>();
+                case "f":
+                    var faceVertices = new List<int>();
                     var normalIndices = new List<int>();
                     var texIndices = new List<int>();
 
@@ -133,25 +136,81 @@ public static class ObjectLoader
                     {
                         string[] split = part.Split('/');
 
-                        // Indexing: OBJ is 1-based, so subtract 1
-                        int vIndex = int.Parse(split[0]) - 1;
-                        face.Add(vIndex);
+                        // Handle vertex indices (required)
+                        if (split.Length > 0 && int.TryParse(split[0], out int vIndex))
+                        {
+                            faceVertices.Add(vIndex - 1); // OBJ indices are 1-based
+                        }
+                        else
+                        {
+                            continue; // Skip invalid face vertex
+                        }
 
-                        if (split.Length > 1 && !string.IsNullOrWhiteSpace(split[1]))
-                            texIndices.Add(int.Parse(split[1]) - 1);
+                        // Handle texture indices (optional)
+                        if (split.Length > 1)
+                        {
+                            if (int.TryParse(split[1], out int tIndex))
+                            {
+                                texIndices.Add(tIndex - 1);
+                            }
+                            else
+                            {
+                                // Add a placeholder if texture index is missing but might be needed for other vertices
+                                texIndices.Add(-1);
+                            }
+                        }
 
-                        if (split.Length > 2 && !string.IsNullOrWhiteSpace(split[2]))
-                            normalIndices.Add(int.Parse(split[2]) - 1);
+                        // Handle normal indices (optional)
+                        if (split.Length > 2)
+                        {
+                            if (int.TryParse(split[2], out int nIndex))
+                            {
+                                normalIndices.Add(nIndex - 1);
+                            }
+                            else
+                            {
+                                // Add a placeholder if normal index is missing but might be needed for other vertices
+                                normalIndices.Add(-1);
+                            }
+                        }
                     }
 
-                    objFaces.Add(face.ToArray());
+                    // Only process if we have at least 3 vertices for a triangle
+                    if (faceVertices.Count >= 3)
+                    {
+                        // Triangulate the face using fan triangulation
+                        for (int i = 1; i < faceVertices.Count - 1; i++)
+                        {
+                            var triangleVerts = new int[] { faceVertices[0], faceVertices[i], faceVertices[i + 1] };
+                            objFaces.Add(triangleVerts);
 
-                    if (normalIndices.Count > 0)
-                        objFaceNormalIndices.Add(normalIndices.ToArray());
+                            // Handle normal indices if available
+                            if (normalIndices.Count > 0)
+                            {
+                                var normalIndicesArray = new int[3];
+                                for (int j = 0; j < 3; j++)
+                                {
+                                    // Map from face vertices to corresponding normal indices
+                                    int idx = j == 0 ? 0 : (j == 1 ? i : i + 1);
+                                    normalIndicesArray[j] = idx < normalIndices.Count ? normalIndices[idx] : -1;
+                                }
+                                objFaceNormalIndices.Add(normalIndicesArray);
+                            }
 
-                    if (texIndices.Count > 0)
-                        objFaceTextureIndices.Add(texIndices.ToArray());
-
+                            // Handle texture indices if available
+                            if (texIndices.Count > 0)
+                            {
+                                var texIndicesArray = new int[3];
+                                for (int j = 0; j < 3; j++)
+                                {
+                                    // Map from face vertices to corresponding texture indices
+                                    int idx = j == 0 ? 0 : (j == 1 ? i : i + 1);
+                                    texIndicesArray[j] = idx < texIndices.Count ? texIndices[idx] : -1;
+                                }
+                                objFaceTextureIndices.Add(texIndicesArray);
+                            }
+                        }
+                    }
                     break;
             }
         }
@@ -185,5 +244,4 @@ public static class ObjectLoader
             return texture;
         }
     }
-
 }

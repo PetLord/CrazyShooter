@@ -51,8 +51,6 @@ public class Mesh : IDisposable
     
     public unsafe void Render(Matrix4X4<float> model, Matrix4X4<float> view, Matrix4X4<float> projection)
     {
-        Shader.Use();
-
         int modelLoc = _gl.GetUniformLocation(Shader.Handle, "uModel");
         _gl.UniformMatrix4(modelLoc, 1, false, (float*)&model);
 

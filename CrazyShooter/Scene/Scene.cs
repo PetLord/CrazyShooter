@@ -1,5 +1,7 @@
-﻿using CrazyShooter.Rendering;
+﻿using CrazyShooter.Input;
+using CrazyShooter.Rendering;
 using CrazyShooter.Rendering.Lights;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Shader = CrazyShooter.Rendering.Shader;
 
@@ -11,29 +13,40 @@ public class Scene : IDisposable
     private Player Player { get; set; }
     private List<GameObject> gameObjects = new List<GameObject>();
     public float AspectRatio { get; set; } = 16 / 9f;
-
+    
     private Shader shader;
+    private SkyBox skyBox;
     private DirectionalLight directionalLight;
     private List<PointLight> pointLights = new();
     private List<SpotLight> spotLights = new();
 
-    public Scene(GL gl, Shader shader, Player player)
+    private PlayerInputHandler playerInputHandler;
+    
+    public Scene(GL gl, Shader shader, Player player, PlayerInputHandler playerInputHandler)
     {
         this.shader = shader;
         Player = player;
         directionalLight = new DirectionalLight();
+        this.playerInputHandler = playerInputHandler;
+        AddDefaultLights();
+        skyBox = new SkyBox(gl, shader);
     }
 
-    public Scene(GL gl, Shader shader)
+    public Scene(GL gl, Shader shader, PlayerInputHandler playerInputHandler)
     {
         this.shader = shader;
         Player = GameObjectFactory.CreatePlayer(gl, shader);
         directionalLight = new DirectionalLight();
+        this.playerInputHandler = playerInputHandler;
+        AddGameObject(GameObjectFactory.CreateCube(gl, shader));
+        AddDefaultLights();
+        skyBox = new SkyBox(gl, shader);
     }
 
-public void Update(double deltaTime)
+    public void Update(double deltaTime)
     {
-        Camera.Follow(Player.Position, Player.Rotation.X, Player.Rotation.Y);
+        playerInputHandler.ProcessInput(Player, deltaTime, Camera);
+        Camera.Follow(Player.Position, Player.Rotation.Y, Player.Rotation.X);
         Player.Update(deltaTime);
         foreach (var t in gameObjects)
         {
@@ -43,16 +56,23 @@ public void Update(double deltaTime)
     
     public void Render(GL gl)
     {
+        gl.Clear((uint)(GLEnum.ColorBufferBit | GLEnum.DepthBufferBit));
+        gl.DepthFunc(GLEnum.Lequal);
+        
+        shader.Use();
+        
         var viewMatrix = Camera.GetViewMatrix();
         var projectionMatrix = Camera.GetProjectionMatrix(AspectRatio);
+        
         SetLights(gl);
+        
         Player.Render(viewMatrix, projectionMatrix);
-        
-        
         foreach (var t in gameObjects)
         {
             t.Render(viewMatrix, projectionMatrix);
         }
+        
+        skyBox.Render(viewMatrix, projectionMatrix);
     }
 
     private void SetLights(GL gl)
@@ -78,7 +98,6 @@ public void Update(double deltaTime)
         {
             var pl = pointLights[i];
             string prefix = $"pointLights[{i}]";
-
             gl.Uniform3(gl.GetUniformLocation(shader.Handle, prefix + ".position"), pl.Position.X, pl.Position.Y, pl.Position.Z);
             gl.Uniform3(gl.GetUniformLocation(shader.Handle, prefix + ".ambient"), pl.Ambient.X, pl.Ambient.Y, pl.Ambient.Z);
             gl.Uniform3(gl.GetUniformLocation(shader.Handle, prefix + ".diffuse"), pl.Diffuse.X, pl.Diffuse.Y, pl.Diffuse.Z);
@@ -119,5 +138,14 @@ public void Update(double deltaTime)
         }
         Player.Dispose();
         
+    }
+
+    private void AddDefaultLights()
+    {
+        PointLight pointLight = new PointLight();
+        pointLight.Position = new Vector3D<float>(10F, 10F, 10F);
+        AddPointLight(pointLight);
+        
+        this.directionalLight = new DirectionalLight();
     }
 }

@@ -16,6 +16,7 @@ namespace CrazyShooter.Tools
     {
         public static string GetEmbeddedResourceAsString(string resourceRelativePath)
         {
+            
             string resourceFullPath = Assembly.GetExecutingAssembly().GetName().Name + "." + resourceRelativePath;
 
             var resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceFullPath);

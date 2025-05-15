@@ -1,4 +1,5 @@
-﻿using CrazyShooter.Rendering;
+﻿using CrazyShooter.Input;
+using CrazyShooter.Rendering;
 using CrazyShooter.Tools;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -29,10 +30,13 @@ class Program
 
     private static GameState gameState = GameState.MainMenu;
     private static Scene.Scene? currentScene;
-    private static Menu menu;
+    private static Menu? menu;
+    private static PlayerInputHandler playerInputHandler;
     
-    private static string vertexSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.VertexShader.vert");
-    private static string fragmentSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.FragmentShader.frag");
+    private static string vertexSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.OmniVertexShader.vert");
+    private static string fragmentSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.OmniFragmentShader.frag");
+
+    // private static string fragmentSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.FragmentShader.frag");
 
     static void Main()
     {
@@ -67,6 +71,8 @@ class Program
         // program = ProgramUtils.LinkProgram(gl);
         inputContext = graphicWindow.CreateInput();
         menu = new Menu(gl, graphicWindow, inputContext);
+        playerInputHandler = new PlayerInputHandler(inputContext.Keyboards.ToArray(), inputContext.Mice.ToArray());
+        // gl.CullFace(TriangleFace.Front);
         gl.Enable(GLEnum.DepthTest);
         gl.DepthFunc(DepthFunction.Lequal);
         gl.ClearColor(0.1f, 0.1f, 0.1f, 1f);
@@ -85,10 +91,11 @@ class Program
         switch (gameState)
         {
             case GameState.Playing:
+                currentScene?.Update(deltaTime);
                 break;
 
             case GameState.MainMenu:
-                menu.Update(deltaTime);
+                menu?.Update(deltaTime);
                 break;
             
             case GameState.Paused:
@@ -138,7 +145,7 @@ class Program
     public static void StartGame()
     {
         gameState = GameState.Playing;
-        currentScene = new Scene.Scene(gl, shader);
+        currentScene = new Scene.Scene(gl, shader, playerInputHandler);
     }
     
     public static void ExitGame()

@@ -17,6 +17,7 @@
 
     <ItemGroup>
       <Folder Include="Assets\Fonts\" />
+      <Folder Include="Assets\Textures\Skybox\" />
       <Folder Include="Core\" />
     </ItemGroup>
 
@@ -29,15 +30,19 @@
       <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.22.0" />
       <PackageReference Include="Silk.NET.Windowing" Version="2.22.0" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
+      <PackageReference Include="StbImageSharp" Version="2.30.15" />
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="Assets\Skybox\skybox.png" />
       <None Remove="Assets\Shaders\FragmentShader.frag" />
       <EmbeddedResource Include="Assets\Shaders\FragmentShader.frag" />
       <None Remove="Assets\Shaders\VertexShader.vert" />
       <EmbeddedResource Include="Assets\Shaders\OmniFragmentShader.frag" />
       <EmbeddedResource Include="Assets\Shaders\OmniVertexShader.vert" />
       <EmbeddedResource Include="Assets\Shaders\VertexShader.vert" />
+      <None Remove="Assets\Shaders\TestShader.frag" />
+      <EmbeddedResource Include="Assets\Shaders\TestShader.frag" />
     </ItemGroup>
 
     <ItemGroup>
