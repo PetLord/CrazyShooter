@@ -43,6 +43,10 @@
       <EmbeddedResource Include="Assets\Shaders\VertexShader.vert" />
       <None Remove="Assets\Shaders\TestShader.frag" />
       <EmbeddedResource Include="Assets\Shaders\TestShader.frag" />
+      <None Remove="Assets\Shaders\SkyBoxFragmentShader.frag" />
+      <EmbeddedResource Include="Assets\Shaders\SkyBoxFragmentShader.frag" />
+      <None Remove="Assets\Shaders\SkyBoxVertexShader.vert" />
+      <EmbeddedResource Include="Assets\Shaders\SkyBoxVertexShader.vert" />
     </ItemGroup>
 
     <ItemGroup>

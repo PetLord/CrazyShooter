@@ -15,6 +15,7 @@ public class Scene : IDisposable
     public float AspectRatio { get; set; } = 16 / 9f;
     
     private Shader shader;
+    private Shader skyBoxShader;
     private SkyBox skyBox;
     private DirectionalLight directionalLight;
     private List<PointLight> pointLights = new();
@@ -22,25 +23,27 @@ public class Scene : IDisposable
 
     private PlayerInputHandler playerInputHandler;
     
-    public Scene(GL gl, Shader shader, Player player, PlayerInputHandler playerInputHandler)
+    public Scene(GL gl, Shader shader, Shader skyBoxShader, Player player, PlayerInputHandler playerInputHandler)
     {
         this.shader = shader;
+        this.skyBoxShader = skyBoxShader;
         Player = player;
         directionalLight = new DirectionalLight();
         this.playerInputHandler = playerInputHandler;
         AddDefaultLights();
-        skyBox = new SkyBox(gl, shader);
+        skyBox = new SkyBox(gl, this.skyBoxShader);
     }
 
-    public Scene(GL gl, Shader shader, PlayerInputHandler playerInputHandler)
+    public Scene(GL gl, Shader shader, Shader skyBoxShader, PlayerInputHandler playerInputHandler)
     {
         this.shader = shader;
+        this.skyBoxShader = skyBoxShader;
         Player = GameObjectFactory.CreatePlayer(gl, shader);
         directionalLight = new DirectionalLight();
         this.playerInputHandler = playerInputHandler;
         AddGameObject(GameObjectFactory.CreateCube(gl, shader));
         AddDefaultLights();
-        skyBox = new SkyBox(gl, shader);
+        skyBox = new SkyBox(gl, this.skyBoxShader);
     }
 
     public void Update(double deltaTime)

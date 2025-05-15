@@ -27,6 +27,7 @@ class Program
     private static GL gl;
     private static uint program;
     private static Shader shader;
+    private static Shader skyBoxShader;
 
     private static GameState gameState = GameState.MainMenu;
     private static Scene.Scene? currentScene;
@@ -35,9 +36,9 @@ class Program
     
     private static string vertexSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.OmniVertexShader.vert");
     private static string fragmentSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.OmniFragmentShader.frag");
-
-    // private static string fragmentSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.FragmentShader.frag");
-
+    private static string skyBoxVertexSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.SkyBoxVertexShader.vert");
+    private static string skyBoxFragmentSource = ShaderUtils.GetEmbeddedResourceAsString("Assets.Shaders.SkyBoxFragmentShader.frag");
+    
     static void Main()
     {
         WindowOptions windowOptions = WindowOptions.Default;
@@ -67,6 +68,7 @@ class Program
     {
         gl = graphicWindow.CreateOpenGL();
         shader = new Shader(gl, vertexSource, fragmentSource);
+        skyBoxShader = new Shader(gl, skyBoxVertexSource, skyBoxFragmentSource);
         program = shader.Handle;
         // program = ProgramUtils.LinkProgram(gl);
         inputContext = graphicWindow.CreateInput();
@@ -145,7 +147,7 @@ class Program
     public static void StartGame()
     {
         gameState = GameState.Playing;
-        currentScene = new Scene.Scene(gl, shader, playerInputHandler);
+        currentScene = new Scene.Scene(gl, shader, shader, playerInputHandler);
         playerInputHandler.SetMouseMode(PlayerInputHandler.MouseState.PlayMode);
     }
     

@@ -57,7 +57,9 @@ public class PlayerInputHandler
         if (sPressed) moveDirection -= camera.Front;
         if (aPressed) moveDirection -= camera.Right;
         if (dPressed) moveDirection += camera.Right;
-        
+
+        // Remove horizontal movement so player cant fly
+        moveDirection.Y = 0;
         if (moveDirection.LengthSquared > 0)
         {
             moveDirection = Vector3D.Normalize(moveDirection);
