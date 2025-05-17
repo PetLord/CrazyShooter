@@ -19,18 +19,20 @@ public static class GameObjectFactory
         return player;
     }
     
-    public static GameObject CreateFloor(GL gl, Shader shader)
+    public static GameObject CreateFloor(GL gl, Shader shader, float size)
     {
         // 2 triangles forming a large square in XZ plane (the floor)
-        float tileRepeat = 10f;
+        float halfSize = size / 2f;
+        float tileSize = 10f;
+        float uvRepeat = size / tileSize;
 
         float[] floorVertices = {
-            -10f, 0f, -10f,   0f, 1f, 0f,   0f, 0f,
-            10f, 0f, -10f,   0f, 1f, 0f,   tileRepeat, 0f,
-            10f, 0f,  10f,   0f, 1f, 0f,   tileRepeat, tileRepeat,
-            -10f, 0f,  10f,   0f, 1f, 0f,   0f, tileRepeat,
+            -halfSize, 0f, -halfSize,   0f, 1f, 0f,   0f, 0f,
+            halfSize, 0f, -halfSize,   0f, 1f, 0f,   uvRepeat, 0f,
+            halfSize, 0f,  halfSize,   0f, 1f, 0f,   uvRepeat, uvRepeat,
+            -halfSize, 0f,  halfSize,   0f, 1f, 0f,   0f, uvRepeat,
         };
-
+        
 
         uint[] indices = {
             0, 1, 2,
@@ -42,7 +44,6 @@ public static class GameObjectFactory
         var mesh = new Mesh(gl, model);
         var floor = new GameObject(mesh);
         floor.Position = new Vector3D<float>(0f, 0f, 0f);
-        floor.Scale = new Vector3D<float>(10f, 10f, 10f);
         return floor;
     }
 
@@ -87,5 +88,40 @@ public static class GameObjectFactory
         bark1Obj.AddChild(vinesObj);
         bark1Obj.AddChild(leavesObj);
         return bark1Obj;
+    }
+
+    public static CompositeGameObject LoadPalm2(GL gl, Shader shader)
+    {
+        uint textureId = ObjectLoader.LoadTexture(gl, Assets.Textures.Palm2);
+        var (bark, barkBounds) = ObjectLoader.LoadCollidable(Assets.Models.Palm2_Bark, shader, textureId);
+        var barkMesh = new Mesh(gl, bark);
+        var barkObj = new CompositeGameObject(barkMesh, barkBounds.min, barkBounds.max);
+        
+        var (leaves, leavesBounds) = ObjectLoader.LoadCollidable(Assets.Models.Palm2_Leaves, shader, textureId);
+        var leavesMesh = new Mesh(gl, leaves);
+        var leavesObj = new CollidableObject(leavesMesh, leavesBounds.min, leavesBounds.max);
+        
+        barkObj.AddChild(leavesObj);
+        return barkObj;
+    }
+    
+    private static CollidableObject CreateGameObjectCactus(GL gl, Shader shader)
+    {
+        return CreateCollidableGameObject(gl, shader, Assets.Models.Cactus, Assets.Textures.Cactus);
+    }
+    
+    
+    private static readonly List<Func<GL, Shader, GameObject>> objectFactories = new()
+    {
+        CreateGameObjectCactus,
+        LoadPalm2,
+        LoadPalm1,
+    };
+
+    public static GameObject CreateRandomObject(GL gl, Shader shader)
+    {
+        var rand = new Random();
+        int index = rand.Next(objectFactories.Count);
+        return objectFactories[index](gl, shader);
     }
 }

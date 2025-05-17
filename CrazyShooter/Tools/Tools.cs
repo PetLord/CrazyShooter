@@ -10,6 +10,18 @@ namespace CrazyShooter.Tools
     {
         public static float ToRadians(float degrees) => degrees * (MathF.PI / 180f);
         public static float ToDegrees(float radians) => radians * (180f / MathF.PI);
+
+        public static float RandomFloatInRange(float minimum, float maximum)
+        {
+            var random = new Random();
+            return (float)(minimum + random.NextDouble() * (maximum - minimum));
+        }
+
+        public static int RandomIntInRange(int minimum, int maximum)
+        {
+            var random = new Random();
+            return (int)( random.NextInt64() % (maximum - minimum) + minimum );
+        }
     }
 
     public static class ShaderUtils
@@ -156,4 +168,5 @@ namespace CrazyShooter.Tools
             return (min, max);
         }
     }
+    
 }

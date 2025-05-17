@@ -9,7 +9,8 @@ public static class Assets
         public static readonly string Palm1_Bark2 = "Assets/Textures/Palm/palm1_bark2.obj";
         public static readonly string Palm1_Leaves = "Assets/Textures/Palm/palm1_leaves.obj";
         public static readonly string Palm1_Vines = "Assets/Textures/Palm/palm1_vines.obj";
-        public static readonly string Palm2 = "Assets/Textures/Palm/palm2.obj";
+        public static readonly string Palm2_Bark = "Assets/Textures/Palm/palm2_bark.obj";
+        public static readonly string Palm2_Leaves = "Assets/Textures/Palm/palm2_leaves.obj";
         public static readonly string Cactus = "Assets/Textures/Cactus/cactus.obj";
 
     }
@@ -18,7 +19,7 @@ public static class Assets
     {
         public static readonly string Duck = "Assets/Textures/Duck/Solid_yellow.png";
         public static readonly string Sand  = "Assets/Textures/Floor/seamless_sand2.png";
-        public static readonly string Palm1 = "Assets/Textures/Palm/palm.jpg";
+        public static readonly string Palm1 = "Assets/Textures/Palm/palm1.jpg";
         public static readonly string Palm2 = "Assets/Textures/Palm/palm2.png";
         public static readonly string Cactus = "Assets/Textures/Cactus/cactus.png";
 

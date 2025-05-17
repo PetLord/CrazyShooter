@@ -10,6 +10,9 @@ namespace CrazyShooter.Scene;
 
 public class Scene : IDisposable
 {
+    private float FloorSize = 150f;
+    private float SpawnSize = 10f;
+    private int ObjectCount = 30;
     private Camera Camera { get; } = new();
     private Player Player { get; set; }
     private List<GameObject> gameObjects = new List<GameObject>();
@@ -24,17 +27,17 @@ public class Scene : IDisposable
 
     private PlayerInputHandler playerInputHandler;
     
-    public Scene(GL gl, Shader shader, Shader skyBoxShader, Player player, PlayerInputHandler playerInputHandler)
-    {
-        this.shader = shader;
-        this.skyBoxShader = skyBoxShader;
-        Player = player;
-        directionalLight = new DirectionalLight();
-        this.playerInputHandler = playerInputHandler;
-        AddDefaultLights();
-        skyBox = new SkyBox(gl, this.skyBoxShader);
-        AddGameObject(GameObjectFactory.CreateFloor(gl, shader));
-    }
+    // public Scene(GL gl, Shader shader, Shader skyBoxShader, Player player, PlayerInputHandler playerInputHandler)
+    // {
+    //     this.shader = shader;
+    //     this.skyBoxShader = skyBoxShader;
+    //     Player = player;
+    //     directionalLight = new DirectionalLight();
+    //     this.playerInputHandler = playerInputHandler;
+    //     AddDefaultLights();
+    //     skyBox = new SkyBox(gl, this.skyBoxShader);
+    //     AddGameObject(GameObjectFactory.CreateFloor(gl, shader, FloorSize));
+    // }
 
     public Scene(GL gl, Shader shader, Shader skyBoxShader, PlayerInputHandler playerInputHandler)
     {
@@ -45,16 +48,30 @@ public class Scene : IDisposable
         this.playerInputHandler = playerInputHandler;
         AddDefaultLights();
         skyBox = new SkyBox(gl, this.skyBoxShader);
-        AddGameObject(GameObjectFactory.CreateFloor(gl, shader));
-        AddRandomObjects(gl, shader, 5);
+        AddGameObject(GameObjectFactory.CreateFloor(gl, shader, FloorSize));
+        AddRandomObjects(gl, shader, ObjectCount);
     }
 
     private void AddRandomObjects(GL gl, Shader shader, int number)
     {
-        //AddGameObject(GameObjectFactory.CreateCollidableGameObject(gl, shader, Assets.Models.Cactus, Assets.Textures.Cactus));
-        var palm1 = GameObjectFactory.LoadPalm1(gl, shader);
-        palm1.Position = new Vector3D<float>(5f, 0f, 5f);
-        AddGameObject(palm1);
+        var rand = new Random();
+        for (int i = 0; i < number; i++)
+        {
+            var newObject = GameObjectFactory.CreateRandomObject(gl, shader);
+
+            var posX = Tools.MathUtils.RandomFloatInRange(-FloorSize/2, FloorSize/2);
+            var posZ = Tools.MathUtils.RandomFloatInRange(-FloorSize/2, FloorSize/2);
+            while ((posX > -SpawnSize/2 && posX < SpawnSize/2) || (posZ > -SpawnSize/2 && posZ < SpawnSize/2))
+            {
+                posX = Tools.MathUtils.RandomFloatInRange(-FloorSize/2, FloorSize/2);
+                posZ = Tools.MathUtils.RandomFloatInRange(-FloorSize/2, FloorSize/2);
+            }
+
+            // float randomYaw = (float)(rand.NextDouble() * 360.0);
+            // newObject.Rotation = new Vector3D<float>(0f, randomYaw, 0f);
+            newObject.Position = new Vector3D<float>(posX, 0, posZ);
+            AddGameObject(newObject);
+        }
     }
     
     public bool TryMove(CollidableObject movingObject, Vector3D<float> movement)
@@ -251,5 +268,10 @@ public class Scene : IDisposable
         AddPointLight(pointLight);
         
         this.directionalLight = new DirectionalLight();
+    }
+
+    public void ToggleCameraView()
+    {
+        Camera.ToggleView();
     }
 }

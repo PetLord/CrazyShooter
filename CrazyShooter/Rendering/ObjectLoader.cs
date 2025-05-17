@@ -11,8 +11,21 @@ namespace CrazyShooter.Rendering;
 
 public static class ObjectLoader
 {
+    private static readonly Dictionary<string, ObjectModel> modelCache = new();
+    private static readonly Dictionary<string, (ObjectModel model, (Vector3D<float> min, Vector3D<float> max))> collidableModelCache = new();
+    private static readonly Dictionary<string,
+        (List<float[]> vertices,
+        List<int[]> faces,
+        List<int[]> faceNormals,
+        List<float[]> normals,
+        List<int[]> faceTexCoords,
+        List<float[]> texCoords)> objectDataCache = new();
+
     public static ObjectModel Load(string path, Shader shader, uint textureId)
     {
+        string modelKey = $"{path}|{shader.Handle}|{textureId}";
+        if (modelCache.TryGetValue(modelKey, out var cached))
+            return cached;
         // Step 1: Read the raw data
         ReadObjectData(
             path,
@@ -65,12 +78,18 @@ public static class ObjectLoader
                 indices.Add(index);
             }
         }
-
-        return new ObjectModel(interleaved.ToArray(), indices.ToArray(), shader, textureId);
+        
+        var model = new ObjectModel(interleaved.ToArray(), indices.ToArray(), shader, textureId);
+        modelCache[modelKey] = model;
+        return model;
     }
     
     public static (ObjectModel model, (Vector3D<float> min, Vector3D<float> max) bounds) LoadCollidable(string path, Shader shader, uint textureId)
     {
+        string modelKey = $"{path}|{shader.Handle}|{textureId}";
+        if (collidableModelCache.TryGetValue(modelKey, out var cached))
+            return cached;
+        
         // Step 1: Read the raw data
         ReadObjectData(
             path,
@@ -124,12 +143,15 @@ public static class ObjectLoader
             }
         }
         
-        return (
-            new ObjectModel(interleaved.ToArray(), indices.ToArray(), shader, textureId),
-            Tools.CollisionTools.ComputeBounds(objVertices)
-        );
+        
+        var model = new ObjectModel(interleaved.ToArray(), indices.ToArray(), shader, textureId);
+        var bounds = Tools.CollisionTools.ComputeBounds(objVertices);
+
+        var result = (model, bounds);
+        collidableModelCache[modelKey] = result;
+        
+        return result;
     }
-    
     
     private static void ReadObjectData(
         string path,
@@ -140,6 +162,16 @@ public static class ObjectLoader
         out List<int[]> objFaceTextureIndices,
         out List<float[]> objTextures)
     {
+        if (objectDataCache.TryGetValue(path, out var cached))
+        {
+            objVertices = cached.vertices;
+            objFaces = cached.faces;
+            objFaceNormalIndices = cached.faceNormals;
+            objNormals = cached.normals;
+            objFaceTextureIndices = cached.faceTexCoords;
+            objTextures = cached.texCoords;
+            return;
+        }
         // Check if the path is valid
         if (!File.Exists(path))
             throw new FileNotFoundException($"File not found: {path}");
@@ -279,7 +311,19 @@ public static class ObjectLoader
         }
     }
     
-    public static unsafe uint LoadTexture(GL gl, string filePath)
+    private static readonly Dictionary<string, uint> loadedTextures = new();
+
+    public static uint LoadTexture(GL gl, string path)
+    {
+        if (loadedTextures.TryGetValue(path, out uint id))
+            return id;
+
+        id = LoadTextureFromFile(gl, path);
+        loadedTextures[path] = id;
+        return id;
+    }
+
+    private static unsafe uint LoadTextureFromFile(GL gl, string filePath)
     {
         using Image<Rgba32> image = Image.Load<Rgba32>(filePath);
 

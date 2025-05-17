@@ -16,6 +16,7 @@ public class PlayerInputHandler
     private List<IKeyboard> keyboards = new();
     private List<IMouse> mice = new();
     
+    private bool wasEnterDown = false;
     private float yaw = -90f;
     private float pitch = 0f;
     private float sensitivity = 0.1f;
@@ -58,6 +59,13 @@ public class PlayerInputHandler
         if (aPressed) moveDirection -= camera.Right;
         if (dPressed) moveDirection += camera.Right;
 
+        if (keyboards.Any(kb => kb.IsKeyPressed(Key.Enter) && !wasEnterDown))
+        {
+            scene.ToggleCameraView();
+        }
+        wasEnterDown = keyboards.Any(kb => kb.IsKeyPressed(Key.Enter));
+
+        
         // Remove horizontal movement so player cant fly
         moveDirection.Y = 0;
         if (moveDirection.LengthSquared > 0)

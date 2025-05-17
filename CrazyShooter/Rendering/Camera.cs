@@ -74,6 +74,7 @@ public class Camera
         Up = Vector3D.Normalize(Vector3D.Cross(Right, Front));
     }
 
+    float eyeOffsetY = 1f;
     public void Follow(Vector3D<float> targetPosition, float yaw, float pitch)
     {
         Yaw = yaw;
@@ -82,7 +83,7 @@ public class Camera
 
         if (Mode == CameraMode.FirstPerson)
         {
-            Position = targetPosition;
+            Position = new Vector3D<float>(targetPosition.X, targetPosition.Y + eyeOffsetY, targetPosition.Z);
         }
         else if (Mode == CameraMode.ThirdPerson)
         {
