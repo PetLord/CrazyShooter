@@ -9,12 +9,8 @@ public static class GameObjectFactory
 {
     public static Player CreatePlayer(GL gl, Shader shader)
     {
-        // string playerModelPath = "Assets/Textures/Duck/RubberDuck_LOD0.obj";
-        string playerModelPath = "Assets/Textures/Duck/RubberDuck.obj";
-        
-        string playerTexturePath = "Assets/Textures/Duck/Solid_yellow.png";
-        uint textureId = ObjectLoader.LoadTexture(gl, playerTexturePath);
-        var model = ObjectLoader.Load(playerModelPath, shader, textureId);
+        uint textureId = ObjectLoader.LoadTexture(gl, Assets.Textures.Duck);
+        var model = ObjectLoader.Load(Assets.Models.Duck, shader, textureId);
         var mesh = new Mesh(gl, model);
         var player = new Player(mesh);
         player.Scale = new Vector3D<float>(0.25f, 0.25f, 0.25f);
@@ -95,8 +91,7 @@ public static class GameObjectFactory
             0, 2, 3
         };
         
-        string floorTexturePath = "Assets/Textures/Floor/seamless_sand2.png";
-        uint textureId = ObjectLoader.LoadTexture(gl, floorTexturePath);
+        uint textureId = ObjectLoader.LoadTexture(gl, Assets.Textures.Sand);
         var model = new ObjectModel(floorVertices, indices, shader, textureId);
         var mesh = new Mesh(gl, model);
         var floor = new GameObject(mesh);
@@ -105,5 +100,13 @@ public static class GameObjectFactory
         return floor;
     }
 
+    public static GameObject CreateGameObject(GL gl, Shader shader, string resourceModelPath, string resourceTexturePath)
+    {
+        uint textureId = ObjectLoader.LoadTexture(gl, resourceTexturePath);
+        var model = ObjectLoader.Load(resourceModelPath, shader, textureId);
+        var mesh = new Mesh(gl, model);
+        var obj = new GameObject(mesh);
+        return obj;
+    }
 
 }

@@ -46,8 +46,14 @@ public class Scene : IDisposable
         AddDefaultLights();
         skyBox = new SkyBox(gl, this.skyBoxShader);
         AddGameObject(GameObjectFactory.CreateFloor(gl, shader));
+        AddTestObjects(gl, shader);
     }
 
+    private void AddTestObjects(GL gl, Shader shader)
+    {
+        AddGameObject(GameObjectFactory.CreateGameObject(gl, shader, Assets.Models.Cactus, Assets.Textures.Cactus));
+    }
+    
     public void Update(double deltaTime)
     {
         playerInputHandler.ProcessInput(Player, deltaTime, Camera);

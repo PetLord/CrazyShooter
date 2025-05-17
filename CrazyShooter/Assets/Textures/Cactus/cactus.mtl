@@ -1,0 +1,35 @@
+# Blender MTL File: 'None'
+# Material Count: 3
+
+newmtl Material.001
+Ns 50.000007
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.200000 0.200000 0.200000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\\Users\\dkris\\Desktop\\Uni\\4. félév\\grafika\\Projekt\\test data\\assets\\cactus\\cactustextur.png
+
+newmtl Material_002
+Ns 50.000007
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\\Users\\dkris\\Desktop\\Uni\\4. félév\\grafika\\Projekt\\test data\\assets\\cactus\\prick.png
+
+newmtl Material_004
+Ns 50.000007
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\\Users\\dkris\\Desktop\\Uni\\4. félév\\grafika\\Projekt\\test data\\assets\\cactus\\prick.png

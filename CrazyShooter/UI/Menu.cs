@@ -6,6 +6,7 @@ using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using System.IO;
+using CrazyShooter.Scene;
 
 namespace CrazyShooter.UI;
 
@@ -13,7 +14,6 @@ public class Menu : IDisposable
 {
     private readonly GL _gl;
     private static ImGuiController controller;
-    private static string fontPath = "Assets/Fonts/GermaniaOne.ttf";
     private static ImGuiIOPtr io;
     private static ImFontPtr fontPtr;
 
@@ -26,13 +26,13 @@ public class Menu : IDisposable
         // Set the ImGui style once
         ImGui.StyleColorsDark();
 
-        if (File.Exists(fontPath))
+        if (File.Exists(Assets.Fonts.Germania))
         {
             // fontPtr = io.Fonts.AddFontFromFileTTF(fontPath, 24, null, io.Fonts.GetGlyphRangesDefault());
         }
         else
         {
-            Console.WriteLine("Font not found: " + fontPath);
+            Console.WriteLine("Font not found: " + Assets.Fonts.Germania);
         }
     }
 

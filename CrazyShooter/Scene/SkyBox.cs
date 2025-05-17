@@ -10,9 +10,6 @@ namespace CrazyShooter.Scene;
 
 public class SkyBox : GameObject
 {
-    private static string skyBoxPath = "Assets.Skybox.skybox_sand.png";
-    private static string skyBoxPathNormal = "Assets.Skybox.skybox.png";
-
     public SkyBox(GL gl, Shader shader) : base(new Mesh(gl, CreateSkyBox(gl, shader)))
     {
         Scale = new Vector3D<float>(2000f, 2000f, 2000f);
@@ -84,7 +81,7 @@ public class SkyBox : GameObject
         };
 
         // Load the skybox texture
-        uint textureId = LoadSkyboxTexture(gl, skyBoxPath);
+        uint textureId = LoadSkyboxTexture(gl, Assets.Skyboxes.Sand);
     
         // Create interleaved vertex data directly for ObjectModel
         var interleavedVertices = new List<float>();
