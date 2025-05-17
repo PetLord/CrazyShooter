@@ -74,7 +74,6 @@ class Program
         inputContext = graphicWindow.CreateInput();
         menu = new Menu(gl, graphicWindow, inputContext);
         playerInputHandler = new PlayerInputHandler(inputContext.Keyboards.ToArray(), inputContext.Mice.ToArray());
-        // gl.CullFace(TriangleFace.Front);
         gl.Enable(GLEnum.DepthTest);
         gl.DepthFunc(DepthFunction.Lequal);
         gl.ClearColor(0.1f, 0.1f, 0.1f, 1f);
@@ -147,7 +146,7 @@ class Program
     public static void StartGame()
     {
         gameState = GameState.Playing;
-        currentScene = new Scene.Scene(gl, shader, shader, playerInputHandler);
+        currentScene = new Scene.Scene(gl, shader, skyBoxShader, playerInputHandler);
         playerInputHandler.SetMouseMode(PlayerInputHandler.MouseState.PlayMode);
     }
     

@@ -15,7 +15,7 @@ public class Camera
     public CameraMode Mode { get; set; } = CameraMode.ThirdPerson;
     public float Distance { get; set; } = 5.0f;
     private float Near { get; set; } = 0.1f;
-    private float Far { get; set; } = 150f;
+    private float Far { get; set; } = 2000f;
     private float Yaw { get; set; } = -90f;
     private float Pitch { get; set; } = 0f;
     private float Speed { get; set; } = 5f;
@@ -88,6 +88,7 @@ public class Camera
         {
             Vector3D<float> offset = -Front * Distance + new Vector3D<float>(0, Distance / 2, 0);
             Position = targetPosition + offset;
+            Position = new Vector3D<float>(Position.X, Math.Max(Position.Y, targetPosition.Y), Position.Z);
         }
     }
 

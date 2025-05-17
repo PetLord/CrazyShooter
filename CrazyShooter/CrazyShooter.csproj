@@ -47,6 +47,10 @@
       <EmbeddedResource Include="Assets\Shaders\SkyBoxFragmentShader.frag" />
       <None Remove="Assets\Shaders\SkyBoxVertexShader.vert" />
       <EmbeddedResource Include="Assets\Shaders\SkyBoxVertexShader.vert" />
+      <None Remove="Assets\Skybox\skybox_sand.png" />
+      <EmbeddedResource Include="Assets\Skybox\skybox_sand.png" />
+      <None Remove="Assets\Skybox\skybox_sand2.png" />
+      <EmbeddedResource Include="Assets\Skybox\skybox_sand2.png" />
     </ItemGroup>
 
     <ItemGroup>

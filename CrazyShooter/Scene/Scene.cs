@@ -32,6 +32,7 @@ public class Scene : IDisposable
         this.playerInputHandler = playerInputHandler;
         AddDefaultLights();
         skyBox = new SkyBox(gl, this.skyBoxShader);
+        AddGameObject(GameObjectFactory.CreateFloor(gl, shader));
     }
 
     public Scene(GL gl, Shader shader, Shader skyBoxShader, PlayerInputHandler playerInputHandler)
@@ -44,6 +45,7 @@ public class Scene : IDisposable
         AddGameObject(GameObjectFactory.CreateCube(gl, shader));
         AddDefaultLights();
         skyBox = new SkyBox(gl, this.skyBoxShader);
+        AddGameObject(GameObjectFactory.CreateFloor(gl, shader));
     }
 
     public void Update(double deltaTime)
@@ -62,11 +64,10 @@ public class Scene : IDisposable
         gl.Clear((uint)(GLEnum.ColorBufferBit | GLEnum.DepthBufferBit));
         gl.DepthFunc(GLEnum.Lequal);
         
-        shader.Use();
-        
         var viewMatrix = Camera.GetViewMatrix();
         var projectionMatrix = Camera.GetProjectionMatrix(AspectRatio);
         
+        shader.Use();
         SetLights(gl);
         
         Player.Render(viewMatrix, projectionMatrix);
@@ -75,7 +76,12 @@ public class Scene : IDisposable
             t.Render(viewMatrix, projectionMatrix);
         }
         
-        skyBox.Render(viewMatrix, projectionMatrix);
+        gl.DepthMask(false);
+        
+        skyBoxShader.Use();
+        skyBox.RenderSkybox(viewMatrix, projectionMatrix);
+        
+        gl.DepthMask(true);
     }
 
     private void SetLights(GL gl)
