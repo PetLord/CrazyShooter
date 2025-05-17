@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System.Reflection;
 using CrazyShooter.Rendering;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
 namespace CrazyShooter.Tools
@@ -15,6 +16,7 @@ namespace CrazyShooter.Tools
     {
         public static string GetEmbeddedResourceAsString(string resourceRelativePath)
         {
+            
             string resourceFullPath = Assembly.GetExecutingAssembly().GetName().Name + "." + resourceRelativePath;
 
             var resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceFullPath);
@@ -24,6 +26,7 @@ namespace CrazyShooter.Tools
             var text = resStreamReader.ReadToEnd();
             return text;
         }
+        
     }
 
     public static class ProgramUtils
@@ -66,7 +69,7 @@ namespace CrazyShooter.Tools
         private const string ViewPosVariableName = "viewPos";
         private const string ShininessVariableName = "shininess";
         
-        private static void SetLightColor(GL gl, uint program, Vector3 color)
+        private static void SetLightColor(GL gl, uint program, Vector3D<float> color)
         {
             int location = gl.GetUniformLocation(program, LightColorVariableName);
 
@@ -79,7 +82,7 @@ namespace CrazyShooter.Tools
             CheckError(gl);
         }
 
-        private static void SetLightPosition(GL gl, uint program, Vector3 position)
+        private static void SetLightPosition(GL gl, uint program, Vector3D<float> position)
         {
             int location = gl.GetUniformLocation(program, LightPositionVariableName);
 

@@ -1,8 +1,14 @@
 ﻿using System.Globalization;
+using System.Reflection;
+using Silk.NET.OpenGL;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using StbImageSharp;
+
 
 namespace CrazyShooter.Rendering;
 
-public static class ObjLoader
+public static class ObjectLoader
 {
     public static ObjectModel Load(string path, Shader shader, uint textureId)
     {
@@ -70,88 +76,172 @@ public static class ObjLoader
         out List<float[]> objNormals,
         out List<int[]> objFaceTextureIndices,
         out List<float[]> objTextures)
-{
-    // Check if the path is valid
-    if (!File.Exists(path))
-        throw new FileNotFoundException($"File not found: {path}");
-
-    // Initialize all output lists
-    objVertices = new List<float[]>();
-    objFaces = new List<int[]>();
-    objNormals = new List<float[]>();
-    objFaceNormalIndices = new List<int[]>();
-    objTextures = new List<float[]>();
-    objFaceTextureIndices = new List<int[]>();
-
-    // Load the file stream
-    using Stream objStream = File.OpenRead(path);
-
-    if (objStream == null)
-        throw new FileNotFoundException($"Could not open stream for: {path}");
-
-    using StreamReader objReader = new StreamReader(objStream);
-
-    while (!objReader.EndOfStream)
     {
-        var line = objReader.ReadLine()?.Trim();
+        // Check if the path is valid
+        if (!File.Exists(path))
+            throw new FileNotFoundException($"File not found: {path}");
 
-        // Skip empty lines or comments
-        if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
-            continue;
+        // Initialize all output lists
+        objVertices = new List<float[]>();
+        objFaces = new List<int[]>();
+        objNormals = new List<float[]>();
+        objFaceNormalIndices = new List<int[]>();
+        objTextures = new List<float[]>();
+        objFaceTextureIndices = new List<int[]>();
 
-        var tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        // Load the file stream
+        using Stream objStream = File.OpenRead(path);
 
-        if (tokens.Length < 2)
-            continue;
+        if (objStream == null)
+            throw new FileNotFoundException($"Could not open stream for: {path}");
 
-        string prefix = tokens[0];
-        string[] data = tokens.Skip(1).ToArray();
+        using StreamReader objReader = new StreamReader(objStream);
 
-        switch (prefix)
+        while (!objReader.EndOfStream)
         {
-            case "v": // vertex position
-                objVertices.Add(data.Select(d => float.Parse(d, CultureInfo.InvariantCulture)).ToArray());
-                break;
+            var line = objReader.ReadLine()?.Trim();
 
-            case "vn": // normal
-                objNormals.Add(data.Select(d => float.Parse(d, CultureInfo.InvariantCulture)).ToArray());
-                break;
+            // Skip empty lines or comments
+            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                continue;
 
-            case "vt": // texture coordinate
-                objTextures.Add(data.Select(d => float.Parse(d, CultureInfo.InvariantCulture)).ToArray());
-                break;
+            var tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            case "f": // face (possibly with v/vt/vn)
-                var face = new List<int>();
-                var normalIndices = new List<int>();
-                var texIndices = new List<int>();
+            if (tokens.Length < 2)
+                continue;
 
-                foreach (string part in data)
-                {
-                    string[] split = part.Split('/');
+            string prefix = tokens[0];
+            string[] data = tokens.Skip(1).ToArray();
 
-                    // Indexing: OBJ is 1-based, so subtract 1
-                    int vIndex = int.Parse(split[0]) - 1;
-                    face.Add(vIndex);
+            switch (prefix)
+            {
+                case "v": // vertex position
+                    objVertices.Add(data.Select(d => float.Parse(d, CultureInfo.InvariantCulture)).ToArray());
+                    break;
 
-                    if (split.Length > 1 && !string.IsNullOrWhiteSpace(split[1]))
-                        texIndices.Add(int.Parse(split[1]) - 1);
+                case "vn": // normal
+                    objNormals.Add(data.Select(d => float.Parse(d, CultureInfo.InvariantCulture)).ToArray());
+                    break;
 
-                    if (split.Length > 2 && !string.IsNullOrWhiteSpace(split[2]))
-                        normalIndices.Add(int.Parse(split[2]) - 1);
-                }
+                case "vt": // texture coordinate
+                    objTextures.Add(data.Select(d => float.Parse(d, CultureInfo.InvariantCulture)).ToArray());
+                    break;
 
-                objFaces.Add(face.ToArray());
+                case "f":
+                    var faceVertices = new List<int>();
+                    var normalIndices = new List<int>();
+                    var texIndices = new List<int>();
 
-                if (normalIndices.Count > 0)
-                    objFaceNormalIndices.Add(normalIndices.ToArray());
+                    foreach (string part in data)
+                    {
+                        string[] split = part.Split('/');
 
-                if (texIndices.Count > 0)
-                    objFaceTextureIndices.Add(texIndices.ToArray());
+                        // Handle vertex indices (required)
+                        if (split.Length > 0 && int.TryParse(split[0], out int vIndex))
+                        {
+                            faceVertices.Add(vIndex - 1); // OBJ indices are 1-based
+                        }
+                        else
+                        {
+                            continue; // Skip invalid face vertex
+                        }
 
-                break;
+                        // Handle texture indices (optional)
+                        if (split.Length > 1)
+                        {
+                            if (int.TryParse(split[1], out int tIndex))
+                            {
+                                texIndices.Add(tIndex - 1);
+                            }
+                            else
+                            {
+                                // Add a placeholder if texture index is missing but might be needed for other vertices
+                                texIndices.Add(-1);
+                            }
+                        }
+
+                        // Handle normal indices (optional)
+                        if (split.Length > 2)
+                        {
+                            if (int.TryParse(split[2], out int nIndex))
+                            {
+                                normalIndices.Add(nIndex - 1);
+                            }
+                            else
+                            {
+                                // Add a placeholder if normal index is missing but might be needed for other vertices
+                                normalIndices.Add(-1);
+                            }
+                        }
+                    }
+
+                    // Only process if we have at least 3 vertices for a triangle
+                    if (faceVertices.Count >= 3)
+                    {
+                        // Triangulate the face using fan triangulation
+                        for (int i = 1; i < faceVertices.Count - 1; i++)
+                        {
+                            var triangleVerts = new int[] { faceVertices[0], faceVertices[i], faceVertices[i + 1] };
+                            objFaces.Add(triangleVerts);
+
+                            // Handle normal indices if available
+                            if (normalIndices.Count > 0)
+                            {
+                                var normalIndicesArray = new int[3];
+                                for (int j = 0; j < 3; j++)
+                                {
+                                    // Map from face vertices to corresponding normal indices
+                                    int idx = j == 0 ? 0 : (j == 1 ? i : i + 1);
+                                    normalIndicesArray[j] = idx < normalIndices.Count ? normalIndices[idx] : -1;
+                                }
+                                objFaceNormalIndices.Add(normalIndicesArray);
+                            }
+
+                            // Handle texture indices if available
+                            if (texIndices.Count > 0)
+                            {
+                                var texIndicesArray = new int[3];
+                                for (int j = 0; j < 3; j++)
+                                {
+                                    // Map from face vertices to corresponding texture indices
+                                    int idx = j == 0 ? 0 : (j == 1 ? i : i + 1);
+                                    texIndicesArray[j] = idx < texIndices.Count ? texIndices[idx] : -1;
+                                }
+                                objFaceTextureIndices.Add(texIndicesArray);
+                            }
+                        }
+                    }
+                    break;
+            }
         }
     }
-}
+    
+    public static unsafe uint LoadTexture(GL gl, string filePath)
+    {
+        using Image<Rgba32> image = Image.Load<Rgba32>(filePath);
 
+        // Allocate buffer for pixel data in RGBA order
+        var pixels = new byte[4 * image.Width * image.Height];
+        image.CopyPixelDataTo(pixels);
+
+        fixed (byte* pixelPtr = pixels)
+        {
+            uint texture = gl.GenTexture();
+            gl.BindTexture(TextureTarget.Texture2D, texture);
+
+            gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba,
+                (uint)image.Width, (uint)image.Height, 0,
+                PixelFormat.Rgba, PixelType.UnsignedByte, pixelPtr);
+
+            gl.GenerateMipmap(TextureTarget.Texture2D);
+
+            // Set texture parameters
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.Repeat);
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GLEnum.Repeat);
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GLEnum.LinearMipmapLinear);
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Linear);
+
+            return texture;
+        }
+    }
 }

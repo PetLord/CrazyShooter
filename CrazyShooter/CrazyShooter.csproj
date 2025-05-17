@@ -16,7 +16,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Assets\Shaders\" />
+      <Folder Include="Assets\Fonts\" />
+      <Folder Include="Assets\Textures\Skybox\" />
       <Folder Include="Core\" />
     </ItemGroup>
 
@@ -26,14 +27,40 @@
       <PackageReference Include="Silk.NET.Input" Version="2.22.0" />
       <PackageReference Include="Silk.NET.Maths" Version="2.22.0" />
       <PackageReference Include="Silk.NET.OpenGL" Version="2.22.0" />
+      <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.22.0" />
       <PackageReference Include="Silk.NET.Windowing" Version="2.22.0" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
+      <PackageReference Include="StbImageSharp" Version="2.30.15" />
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="Assets\Skybox\skybox.png" />
       <None Remove="Assets\Shaders\FragmentShader.frag" />
       <EmbeddedResource Include="Assets\Shaders\FragmentShader.frag" />
       <None Remove="Assets\Shaders\VertexShader.vert" />
+      <EmbeddedResource Include="Assets\Shaders\OmniFragmentShader.frag" />
+      <EmbeddedResource Include="Assets\Shaders\OmniVertexShader.vert" />
       <EmbeddedResource Include="Assets\Shaders\VertexShader.vert" />
+      <None Remove="Assets\Shaders\TestShader.frag" />
+      <EmbeddedResource Include="Assets\Shaders\TestShader.frag" />
+      <None Remove="Assets\Shaders\SkyBoxFragmentShader.frag" />
+      <EmbeddedResource Include="Assets\Shaders\SkyBoxFragmentShader.frag" />
+      <None Remove="Assets\Shaders\SkyBoxVertexShader.vert" />
+      <EmbeddedResource Include="Assets\Shaders\SkyBoxVertexShader.vert" />
+      <None Remove="Assets\Skybox\skybox_sand.png" />
+      <EmbeddedResource Include="Assets\Skybox\skybox_sand.png" />
+      <None Remove="Assets\Skybox\skybox_sand2.png" />
+      <EmbeddedResource Include="Assets\Skybox\skybox_sand2.png" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Include="Assets\Fonts\**">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Include="Assets\Textures\**">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 
 </Project>

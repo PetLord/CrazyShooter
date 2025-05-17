@@ -1,5 +1,6 @@
-﻿using System.Numerics;
+﻿using Silk.NET.Maths;
 using CrazyShooter.Tools;
+
 namespace CrazyShooter.Rendering;
 
 public class Camera
@@ -9,40 +10,43 @@ public class Camera
         FirstPerson,
         ThirdPerson
     }
-    
-    public Vector3 Position { get; set; } = new(0f, 0f, 3f);
+
+    public Vector3D<float> Position { get; set; } = new(0f, 0f, 3f);
     public CameraMode Mode { get; set; } = CameraMode.ThirdPerson;
     public float Distance { get; set; } = 5.0f;
+    private float Near { get; set; } = 0.1f;
+    private float Far { get; set; } = 2000f;
     private float Yaw { get; set; } = -90f;
-    private float Pitch { get; set; }= 0f;
+    private float Pitch { get; set; } = 0f;
     private float Speed { get; set; } = 5f;
     private float Sensitivity { get; set; } = 0.1f;
     private float Zoom { get; set; } = 45f;
 
-    private Vector3 Front { get; set; } = -Vector3.UnitZ;
-    private Vector3 Up { get; set; } = Vector3.UnitY;
-    private Vector3 Right { get; set; } = Vector3.UnitX;
-    private Vector3 WorldUp { get; set; } = Vector3.UnitY;
+    public Vector3D<float> Front { get; set; } = -Vector3D<float>.UnitZ;
+    private Vector3D<float> Up { get; set; } = Vector3D<float>.UnitY;
+    public Vector3D<float> Right { get; set; } = Vector3D<float>.UnitX;
+    private Vector3D<float> WorldUp { get; set; } = Vector3D<float>.UnitY;
 
     public Camera()
     {
         UpdateCameraVectors();
     }
 
-    public Matrix4x4 GetViewMatrix()
-        => Matrix4x4.CreateLookAt(Position, Position + Front, Up);
-
-    public Matrix4x4 GetProjectionMatrix(float aspectRatio)
-        => Matrix4x4.CreatePerspectiveFieldOfView(MathUtils.ToRadians(Zoom), aspectRatio, 0.1f, 100f);
-
-    public void ProcessKeyboard(Vector3 direction, float deltaTime)
+    public Matrix4X4<float> GetViewMatrix()
     {
-        float velocity = Speed * deltaTime;
-        Position += direction * velocity;
+        return Matrix4X4.CreateLookAt(Position, Position + Front, Up);
     }
+
+    public Matrix4X4<float> GetProjectionMatrix(float aspectRatio)
+    {
+        return Matrix4X4.CreatePerspectiveFieldOfView(
+            MathUtils.ToRadians(Zoom), aspectRatio, Near, Far);
+    }
+    
 
     public void ProcessMouseMovement(float deltaX, float deltaY, bool constrainPitch = true)
     {
+        
         Yaw += deltaX * Sensitivity;
         Pitch -= deltaY * Sensitivity;
 
@@ -56,16 +60,21 @@ public class Camera
 
     private void UpdateCameraVectors()
     {
-        Vector3 front;
-        front.X = MathF.Cos(MathUtils.ToRadians(Yaw)) * MathF.Cos(MathUtils.ToRadians(Pitch));
-        front.Y = MathF.Sin(MathUtils.ToRadians(Pitch));
-        front.Z = MathF.Sin(MathUtils.ToRadians(Yaw)) * MathF.Cos(MathUtils.ToRadians(Pitch));
-        Front = Vector3.Normalize(front);
-        Right = Vector3.Normalize(Vector3.Cross(Front, WorldUp));
-        Up = Vector3.Normalize(Vector3.Cross(Right, Front));
+        float yawRad = MathUtils.ToRadians(Yaw);
+        float pitchRad = MathUtils.ToRadians(Pitch);
+
+        Vector3D<float> front = new(
+            MathF.Cos(yawRad) * MathF.Cos(pitchRad),
+            MathF.Sin(pitchRad),
+            MathF.Sin(yawRad) * MathF.Cos(pitchRad)
+        );
+
+        Front = Vector3D.Normalize(front);
+        Right = Vector3D.Normalize(Vector3D.Cross(Front, WorldUp));
+        Up = Vector3D.Normalize(Vector3D.Cross(Right, Front));
     }
 
-    public void Follow(Vector3 targetPosition, float yaw, float pitch)
+    public void Follow(Vector3D<float> targetPosition, float yaw, float pitch)
     {
         Yaw = yaw;
         Pitch = pitch;
@@ -77,8 +86,9 @@ public class Camera
         }
         else if (Mode == CameraMode.ThirdPerson)
         {
-            Vector3 offset = -Front * Distance + new Vector3(0, Distance / 2, 0);
+            Vector3D<float> offset = -Front * Distance + new Vector3D<float>(0, Distance / 2, 0);
             Position = targetPosition + offset;
+            Position = new Vector3D<float>(Position.X, Math.Max(Position.Y, targetPosition.Y), Position.Z);
         }
     }
 
@@ -92,9 +102,9 @@ public class Camera
             case CameraMode.ThirdPerson:
                 Mode = CameraMode.FirstPerson;
                 return;
+            default:
+                return;
         }
         
     }
-
 }
-

@@ -1,4 +1,5 @@
-﻿using Silk.NET.Maths;
+﻿using CrazyShooter.Rendering;
+using Silk.NET.Maths;
 using CrazyShooter.Scene;
 using Silk.NET.Input;
 
@@ -6,8 +7,14 @@ namespace CrazyShooter.Input;
 
 public class PlayerInputHandler
 {
-    private readonly IKeyboard _keyboard;
-    private readonly IMouse _mouse;
+    public enum MouseState
+    {
+        PlayMode,
+        FreeMode,
+    }
+    
+    private List<IKeyboard> keyboards = new();
+    private List<IMouse> mice = new();
     
     private float yaw = -90f;
     private float pitch = 0f;
@@ -15,42 +22,101 @@ public class PlayerInputHandler
     
     private Vector2D<float> lastMousePos;
     private bool firstFrame = true;
+    private MouseState currentMode = MouseState.FreeMode;
     
     public Vector2D<float> MouseDelta { get; private set; }
 
-    public PlayerInputHandler(IKeyboard keyboard, IMouse mouse)
+    public PlayerInputHandler(IKeyboard[] keyboards, IMouse[] mice)
     {
-        _keyboard = keyboard;
-        _mouse = mouse;
+        foreach (IKeyboard keyboard in keyboards)
+        {
+            this.keyboards.Add(keyboard);
+        }
+
+        foreach (IMouse mouse in mice)
+        {
+            this.mice.Add(mouse);
+        }
+            
     }
 
-    public void ProcessInput(Player player, double deltaTime)
+    public void ProcessInput(Player player, double deltaTime, Camera camera)
     {
         float dt = (float)deltaTime;
         float speed = player.MovementSpeed;
 
-        // Keyboard Movement
-        if (_keyboard.IsKeyPressed(Key.W)) player.Position.Z -= speed * dt;
-        if (_keyboard.IsKeyPressed(Key.S)) player.Position.Z += speed * dt;
-        if (_keyboard.IsKeyPressed(Key.A)) player.Position.X -= speed * dt;
-        if (_keyboard.IsKeyPressed(Key.D)) player.Position.X += speed * dt;
+        // Aggregate keyboard input: if any keyboard has the key pressed, consider it pressed
+        bool wPressed = keyboards.Any(kb => kb.IsKeyPressed(Key.W));
+        bool sPressed = keyboards.Any(kb => kb.IsKeyPressed(Key.S));
+        bool aPressed = keyboards.Any(kb => kb.IsKeyPressed(Key.A));
+        bool dPressed = keyboards.Any(kb => kb.IsKeyPressed(Key.D));
 
-        // Mouse Movement
-        Vector2D<float> mousePos = new Vector2D<float>(_mouse.Position.X, _mouse.Position.Y);
-
-        if (firstFrame)
-        {
-            lastMousePos = mousePos;
-            firstFrame = false;
-        }
-
-        MouseDelta = mousePos - lastMousePos;
-        lastMousePos = mousePos;
-
-        yaw += MouseDelta.X * sensitivity;
-        pitch -= MouseDelta.Y * sensitivity;
-        pitch = Math.Clamp(pitch, -89f, 89f);
+        Vector3D<float> moveDirection = Vector3D<float>.Zero;
         
-        player.Rotation = new Vector3D<float>(pitch, yaw, 0);
+        if (wPressed) moveDirection += camera.Front;
+        if (sPressed) moveDirection -= camera.Front;
+        if (aPressed) moveDirection -= camera.Right;
+        if (dPressed) moveDirection += camera.Right;
+
+        // Remove horizontal movement so player cant fly
+        moveDirection.Y = 0;
+        if (moveDirection.LengthSquared > 0)
+        {
+            moveDirection = Vector3D.Normalize(moveDirection);
+            player.Position += moveDirection * speed * dt;
+        }
+        
+        if (mice.Count > 0)
+        {
+            var mouse = mice[0];
+            Vector2D<float> mousePos = new(mouse.Position.X, mouse.Position.Y);
+
+            if (firstFrame)
+            {
+                lastMousePos = mousePos;
+                firstFrame = false;
+            }
+
+            Vector2D<float> mouseDelta = mousePos - lastMousePos;
+            lastMousePos = mousePos;
+
+            // camera.ProcessMouseMovement(mouseDelta.X, mouseDelta.Y);
+            player.Rotation = new Vector3D<float>(
+                Math.Clamp(player.Rotation.X - mouseDelta.Y * sensitivity, -89f, 89f),
+                player.Rotation.Y + mouseDelta.X * sensitivity,                       
+                0);
+        }
     }
+    
+    public void SetMouseMode(MouseState mouseState)
+    {
+        currentMode = mouseState;
+        switch (mouseState)
+        {
+            case MouseState.PlayMode:
+                SwitchToPlay();
+                break;
+            case MouseState.FreeMode:
+                SwitchToFreeMode();
+                break;
+        }
+    }
+
+    private void SwitchToPlay()
+    {
+        IMouse currentMouse = mice[0];
+        currentMode = MouseState.PlayMode;
+        currentMouse.Cursor.CursorMode = CursorMode.Raw;
+        currentMouse.Cursor.IsConfined = true;
+    }
+
+    private void SwitchToFreeMode()
+    {
+        IMouse currentMouse = mice[0];
+        currentMode = MouseState.FreeMode;
+        currentMouse.Cursor.CursorMode = CursorMode.Normal;
+        currentMouse.Cursor.IsConfined = false;
+
+    }
+    
 }
