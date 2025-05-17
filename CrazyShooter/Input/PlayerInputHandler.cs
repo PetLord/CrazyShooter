@@ -40,7 +40,7 @@ public class PlayerInputHandler
             
     }
 
-    public void ProcessInput(Player player, double deltaTime, Camera camera)
+    public void ProcessInput(Player player, double deltaTime, Camera camera, Scene.Scene scene)
     {
         float dt = (float)deltaTime;
         float speed = player.MovementSpeed;
@@ -63,7 +63,8 @@ public class PlayerInputHandler
         if (moveDirection.LengthSquared > 0)
         {
             moveDirection = Vector3D.Normalize(moveDirection);
-            player.Position += moveDirection * speed * dt;
+            
+            scene.TryMove(player, moveDirection * speed * dt); 
         }
         
         if (mice.Count > 0)

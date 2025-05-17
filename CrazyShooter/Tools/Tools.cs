@@ -128,5 +128,32 @@ namespace CrazyShooter.Tools
                 throw new Exception("GL.GetError() returned " + error.ToString());
         }
     }
-    
+
+
+    public static class CollisionTools
+    {
+        public static (Vector3D<float> min, Vector3D<float> max) ComputeBounds(List<float[]> objVertices)
+        {
+            if (objVertices.Count == 0)
+                return (Vector3D<float>.Zero, Vector3D<float>.Zero);
+
+            float minX = float.MaxValue, minY = float.MaxValue, minZ = float.MaxValue;
+            float maxX = float.MinValue, maxY = float.MinValue, maxZ = float.MinValue;
+
+            foreach (var v in objVertices)
+            {
+                minX = MathF.Min(minX, v[0]);
+                minY = MathF.Min(minY, v[1]);
+                minZ = MathF.Min(minZ, v[2]);
+
+                maxX = MathF.Max(maxX, v[0]);
+                maxY = MathF.Max(maxY, v[1]);
+                maxZ = MathF.Max(maxZ, v[2]);
+            }
+
+            var min = new Vector3D<float>(minX, minY, minZ);
+            var max = new Vector3D<float>(maxX, maxY, maxZ);
+            return (min, max);
+        }
+    }
 }

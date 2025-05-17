@@ -1,4 +1,5 @@
-﻿using CrazyShooter.Input;
+﻿using CrazyShooter.Collision;
+using CrazyShooter.Input;
 using CrazyShooter.Rendering;
 using CrazyShooter.Rendering.Lights;
 using Silk.NET.Maths;
@@ -42,21 +43,109 @@ public class Scene : IDisposable
         Player = GameObjectFactory.CreatePlayer(gl, shader);
         directionalLight = new DirectionalLight();
         this.playerInputHandler = playerInputHandler;
-        AddGameObject(GameObjectFactory.CreateCube(gl, shader));
         AddDefaultLights();
         skyBox = new SkyBox(gl, this.skyBoxShader);
         AddGameObject(GameObjectFactory.CreateFloor(gl, shader));
-        AddTestObjects(gl, shader);
+        AddRandomObjects(gl, shader, 5);
     }
 
-    private void AddTestObjects(GL gl, Shader shader)
+    private void AddRandomObjects(GL gl, Shader shader, int number)
     {
-        AddGameObject(GameObjectFactory.CreateGameObject(gl, shader, Assets.Models.Cactus, Assets.Textures.Cactus));
+        //AddGameObject(GameObjectFactory.CreateCollidableGameObject(gl, shader, Assets.Models.Cactus, Assets.Textures.Cactus));
+        var palm1 = GameObjectFactory.LoadPalm1(gl, shader);
+        palm1.Position = new Vector3D<float>(5f, 0f, 5f);
+        AddGameObject(palm1);
     }
+    
+    public bool TryMove(CollidableObject movingObject, Vector3D<float> movement)
+    {
+        // Check for current penetration
+        var currentBounds = movingObject.BoundingBox;
+        foreach (var obj in gameObjects)
+        {
+            if (obj == movingObject) continue;
+            if (obj is ICollidable collidable && currentBounds.Intersects(collidable.BoundingBox))
+            {
+                // They are already intersecting → resolve
+                ResolvePenetration(movingObject, collidable);
+                return false;
+            }
+
+            if (obj is CompositeGameObject compositeGameObject)
+            {
+                foreach (var child in compositeGameObject.GetChildren())
+                {
+                    if (child is ICollidable collidableChild && currentBounds.Intersects(collidableChild.BoundingBox))
+                    {
+                        ResolvePenetration(movingObject, collidableChild);
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        // Compute proposed bounding box
+        var proposedPosition = movingObject.Position + movement;
+        BoundingBox proposedBounds = new BoundingBox(
+            proposedPosition + movingObject.MeshMinBounds * movingObject.Scale,
+            proposedPosition + movingObject.MeshMaxBounds * movingObject.Scale
+        );
+        
+        foreach (var obj in gameObjects)
+        {
+            if (obj == movingObject) continue;
+            if (obj is ICollidable collidable && proposedBounds.Intersects(collidable.BoundingBox))
+            {
+                return false;
+            }
+            
+            if (obj is CompositeGameObject compositeGameObject)
+            {
+                foreach (var child in compositeGameObject.GetChildren())
+                {
+                    if (child is ICollidable collidableChild && proposedBounds.Intersects(collidableChild.BoundingBox))
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        movingObject.Position = proposedPosition;
+        return true;
+    }
+    
+    void ResolvePenetration(CollidableObject obj, ICollidable other)
+    {
+        var a = obj.BoundingBox;
+        var b = other.BoundingBox;
+
+        var overlapX = MathF.Min(a.Max.X, b.Max.X) - MathF.Max(a.Min.X, b.Min.X);
+        var overlapY = MathF.Min(a.Max.Y, b.Max.Y) - MathF.Max(a.Min.Y, b.Min.Y);
+        var overlapZ = MathF.Min(a.Max.Z, b.Max.Z) - MathF.Max(a.Min.Z, b.Min.Z);
+
+        // Find the smallest axis to push on
+        if (overlapX < overlapY && overlapX < overlapZ)
+        {
+            float pushX = (a.Center.X < b.Center.X) ? -overlapX : overlapX;
+            obj.Position = new Vector3D<float>(obj.Position.X + pushX, obj.Position.Y, obj.Position.Z);
+        }
+        else if (overlapY < overlapZ)
+        {
+            float pushY = (a.Center.Y < b.Center.Y) ? -overlapY : overlapY;
+            obj.Position = new Vector3D<float>(obj.Position.X, obj.Position.Y + pushY, obj.Position.Z);
+        }
+        else
+        {
+            float pushZ = (a.Center.Z < b.Center.Z) ? -overlapZ : overlapZ;
+            obj.Position = new Vector3D<float>(obj.Position.X, obj.Position.Y, obj.Position.Z + pushZ);
+        }
+    }
+
     
     public void Update(double deltaTime)
     {
-        playerInputHandler.ProcessInput(Player, deltaTime, Camera);
+        playerInputHandler.ProcessInput(Player, deltaTime, Camera, this);
         Camera.Follow(Player.Position, Player.Rotation.Y, Player.Rotation.X);
         Player.Update(deltaTime);
         foreach (var t in gameObjects)

@@ -7,10 +7,27 @@ namespace CrazyShooter.Scene;
 
 public class GameObject : IDisposable
 {
-    public Vector3D<float> Position = Vector3D<float>.Zero;
-    public Vector3D<float> Rotation = Vector3D<float>.Zero;
-    public Vector3D<float> Scale = Vector3D<float>.One;
+    private Vector3D<float> _position = Vector3D<float>.Zero;
+    private Vector3D<float> _rotation = Vector3D<float>.Zero;
+    private Vector3D<float> _scale = Vector3D<float>.One;
 
+    public virtual Vector3D<float> Position
+    {
+        get => _position;
+        set => _position = value;
+    }
+
+    public virtual Vector3D<float> Rotation
+    {
+        get => _rotation;
+        set => _rotation = value;
+    }
+
+    public virtual Vector3D<float> Scale
+    {
+        get => _scale;
+        set => _scale = value;
+    }
     public Mesh Mesh;
 
     public GameObject(Mesh mesh)
@@ -23,7 +40,7 @@ public class GameObject : IDisposable
         // Override in derived classes
     }
 
-    public unsafe void Render(Matrix4X4<float> view, Matrix4X4<float> projection)
+    public virtual unsafe void Render(Matrix4X4<float> view, Matrix4X4<float> projection)
     {
         Matrix4X4<float> model =
             Matrix4X4.CreateScale(Scale) *
