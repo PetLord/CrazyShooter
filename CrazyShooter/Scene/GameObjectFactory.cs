@@ -10,7 +10,7 @@ public static class GameObjectFactory
     public static Player CreatePlayer(GL gl, Shader shader)
     {
         // string playerModelPath = "Assets/Textures/Duck/RubberDuck_LOD0.obj";
-        string playerModelPath = "Assets/Textures/Duck/teapot.obj";
+        string playerModelPath = "Assets/Textures/Duck/RubberDuck.obj";
         
         string playerTexturePath = "Assets/Textures/Duck/Solid_yellow.png";
         uint textureId = ObjectLoader.LoadTexture(gl, playerTexturePath);
